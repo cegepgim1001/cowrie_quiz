@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Mastering Deception</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .option-btn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col items-center py-10 px-4">
+
+    <!-- Quiz Container -->
+    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+        
+        <!-- Header -->
+        <header class="bg-slate-900 text-white p-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Mastering Deception</h1>
+                    <p class="text-slate-400 text-sm mt-1">Honeypots & Threat Intelligence</p>
+                </div>
+                <div class="text-right">
+                    <div id="score-display" class="text-2xl font-bold text-emerald-400">0</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Score</div>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-700 h-2 rounded-full mt-6 overflow-hidden">
+                <div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="p-8">
+            
+            <!-- Start Screen -->
+            <div id="start-screen" class="text-center py-8">
+                <div class="text-6xl mb-6">🛡️</div>
+                <h2 class="text-2xl font-bold mb-4">Ready to test your knowledge?</h2>
+                <p class="text-slate-600 mb-8">This quiz covers Cowrie, Dionaea, T-Pot, Honeynets, and Threat Intelligence concepts.</p>
+                <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    Start Quiz
+                </button>
+            </div>
+
+            <!-- Question Screen -->
+            <div id="question-screen" class="hidden fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <span id="question-counter" class="text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">Question 1/10</span>
+                </div>
+                
+                <h2 id="question-text" class="text-xl font-semibold leading-relaxed mb-8 text-slate-800">
+                    <!-- Question goes here -->
+                </h2>
+
+                <div id="options-container" class="space-y-3">
+                    <!-- Options injected via JS -->
+                </div>
+
+                <!-- Feedback / Next Area -->
+                <div id="feedback-area" class="hidden mt-6 pt-6 border-t border-slate-100">
+                    <div id="feedback-message" class="p-4 rounded-lg mb-4 text-sm leading-relaxed"></div>
+                    <button id="next-btn" onclick="nextQuestion()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg transition-colors">
+                        Next Question &rarr;
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div id="result-screen" class="hidden text-center py-8 fade-in">
+                <div id="result-emoji" class="text-6xl mb-4">🏆</div>
+                <h2 class="text-3xl font-bold mb-2">Quiz Complete!</h2>
+                <p class="text-slate-500 mb-8">Here is how you performed.</p>
+                
+                <div class="inline-block bg-slate-100 rounded-xl p-8 mb-8 border border-slate-200">
+                    <div class="text-sm text-slate-500 uppercase tracking-widest mb-2">Final Score</div>
+                    <div id="final-score" class="text-5xl font-bold text-slate-900">0/10</div>
+                </div>
+
+                <div class="flex justify-center gap-4">
+                    <button onclick="restartQuiz()" class="bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-2 px-6 rounded-lg transition-colors">
+                        Retake Quiz
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- JavaScript Data & Logic -->
+    <script>
+        const quizData = [
+            {
+                "question": "An organization is specifically concerned about capturing malware samples of new worms spreading via SMB exploits like WannaCry. Which honeypot solution from the lecture is best suited for this specific task?",
+                "answerOptions": [
+                    { "text": "Dionaea", "rationale": "Dionaea is a low-interaction honeypot explicitly designed to expose vulnerable services like SMB to capture malware payloads.", "isCorrect": true },
+                    { "text": "Cowrie", "rationale": "Cowrie focuses on SSH and Telnet interactions and command logging, not specifically on capturing malware via SMB exploits.", "isCorrect": false },
+                    { "text": "The ELK Stack", "rationale": "The ELK Stack is used for visualizing data within platforms like T-Pot, but it does not capture malware itself.", "isCorrect": false },
+                    { "text": "Honeytoken", "rationale": "A Honeytoken is a decoy file or credential used to trigger an alert, not a standalone honeypot software for capturing malware.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "In the Cowrie scenario, an attacker logs in and immediately executes a command involving `curl` and `bash`. Based on the lecture, what does this behavior primarily indicate to the administrator?",
+                "answerOptions": [
+                    { "text": "The attacker intends to install a cryptocurrency miner.", "rationale": "The command downloads a script from a malicious site and executes it, which the lecture identifies as a common tactic for installing miners.", "isCorrect": true },
+                    { "text": "The attacker is attempting to steal the password database.", "rationale": "While possible in other contexts, the specific command shown (`curl ... | bash`) indicates downloading and running code, not exfiltrating local files.", "isCorrect": false },
+                    { "text": "The attacker is moving laterally to the Active Directory.", "rationale": "Lateral movement involves jumping to other systems; this command is downloading software to the current machine.", "isCorrect": false },
+                    { "text": "The attacker is encrypting files for a ransomware attack.", "rationale": "Ransomware typically involves encryption commands or binaries; the scenario specifically links the download command to mining.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What is the primary architectural purpose of the 'Honeywall' within a Honeynet environment?",
+                "answerOptions": [
+                    { "text": "To capture traffic and prevent outbound attacks from the honeynet.", "rationale": "The Honeywall acts as a gateway that monitors data control, ensuring trapped attackers cannot use the honeynet to harm external targets.", "isCorrect": true },
+                    { "text": "To generate fake passwords for the honeypots.", "rationale": "Generating fake data is part of the honeypot configuration, not the gateway's architectural role.", "isCorrect": false },
+                    { "text": "To visualize the logs using the ELK stack.", "rationale": "Visualization is handled by tools like Kibana in the T-Pot stack, not the Honeywall gateway itself.", "isCorrect": false },
+                    { "text": "To install Docker containers for high-interaction honeypots.", "rationale": "Docker is a platform for running containers, while the Honeywall is a network control component.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "When distinguishing between High-Interaction and Low-Interaction honeypots, what is the main trade-off described?",
+                "answerOptions": [
+                    { "text": "High-Interaction provides richer data but carries higher risk and maintenance.", "rationale": "High-interaction honeypots use real operating systems, allowing for deep behavioral analysis but posing a risk if the attacker escapes the containment.", "isCorrect": true },
+                    { "text": "Low-Interaction is riskier because it emulates vulnerable services.", "rationale": "Low-interaction is generally safer because it only emulates services and doesn't provide a full OS for the attacker to exploit.", "isCorrect": false },
+                    { "text": "High-Interaction uses Docker while Low-Interaction uses Virtual Machines.", "rationale": "Deployment methods (Docker vs VM) can apply to both; the distinction is in the level of functionality exposed to the attacker.", "isCorrect": false },
+                    { "text": "Low-Interaction provides more data on lateral movement than High-Interaction.", "rationale": "Low-interaction provides less data because the attacker is limited to the emulated scripts, whereas High-interaction allows full OS exploration.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "In the context of Threat Intelligence, how does an IOC (Indicator of Compromise) differ from a TTP (Tactic, Technique, and Procedure)?",
+                "answerOptions": [
+                    { "text": "IOCs are atomic data points like IPs, while TTPs describe behavioral patterns.", "rationale": "IOCs (like hashes or IPs) answer 'what' was seen, while TTPs answer 'how' the attacker operates.", "isCorrect": true },
+                    { "text": "IOCs explain the attacker's motivation, while TTPs list the file hashes.", "rationale": "This reverses the concepts; motivation is closer to TTPs/Profiling, and file hashes are definitely IOCs.", "isCorrect": false },
+                    { "text": "IOCs are used for blocking, while TTPs are only used for legal prosecution.", "rationale": "Both are used for defense; TTPs help understand the attack lifecycle and improve overall security posture.", "isCorrect": false },
+                    { "text": "There is no difference; they are interchangeable terms for log data.", "rationale": "They represent different levels of intelligence: one is static evidence, the other is behavioral analysis.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "In the 'Decoy HR Department' scenario, what specific mechanism triggers the silent alarm when the attacker accesses the sensitive file?",
+                "answerOptions": [
+                    { "text": "A Honeytoken", "rationale": "The file acts as a Honeytoken; its mere access triggers the alert because no legitimate user has a reason to touch it.", "isCorrect": true },
+                    { "text": "A Firewall Rule", "rationale": "Firewalls filter network traffic based on IP/Port, they do not typically alert based on specific file access within an OS.", "isCorrect": false },
+                    { "text": "A Brute Force Detector", "rationale": "Brute force detection looks for failed login attempts, not access to a specific file after a successful login.", "isCorrect": false },
+                    { "text": "A Reverse Proxy", "rationale": "A reverse proxy handles incoming web requests, it does not monitor file access on the backend server.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Which command in the provided lab section is used to run the Cowrie container in the background?",
+                "answerOptions": [
+                    { "text": "sudo docker run ... -d cowrie/cowrie", "rationale": "The `-d` flag in Docker stands for 'detached' mode, which runs the container in the background.", "isCorrect": true },
+                    { "text": "sudo docker pull cowrie/cowrie", "rationale": "The `pull` command downloads the image from the registry but does not start it.", "isCorrect": false },
+                    { "text": "ssh -p 2222 root@127.0.0.1", "rationale": "This command connects to the container; it does not start the container itself.", "isCorrect": false },
+                    { "text": "sudo apt-get install docker.io", "rationale": "This command installs the Docker software, it does not run a specific container.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What is the primary function of the T-Pot platform as described in the lecture?",
+                "answerOptions": [
+                    { "text": "It runs multiple honeypots simultaneously using Docker and visualizes data with the ELK stack.", "rationale": "T-Pot is described as an all-in-one platform that aggregates various honeypots and provides visualization tools.", "isCorrect": true },
+                    { "text": "It is a specialized tool solely for capturing Windows SMB malware.", "rationale": "This describes Dionaea, whereas T-Pot is a collection of many tools, including Dionaea.", "isCorrect": false },
+                    { "text": "It is a script used to brute force SSH passwords on remote servers.", "rationale": "T-Pot is a defensive tool (honeypot platform), not an offensive tool for conducting brute force attacks.", "isCorrect": false },
+                    { "text": "It is a firewall rule generator that sits on the network edge.", "rationale": "While its data can feed firewalls (as seen in the automation example), T-Pot itself is a honeypot platform, not a firewall.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "In the automated firewall blocking example, what technology is used to identify the IP addresses from the raw log text?",
+                "answerOptions": [
+                    { "text": "Regular Expressions (Regex)", "rationale": "The code example uses the `re` module and a specific pattern (`\\d{1,3}...`) to find and extract IP addresses.", "isCorrect": true },
+                    { "text": "SQL Queries", "rationale": "The example reads a raw text file (`attack_logs.txt`), not a structured database, so SQL is not used.", "isCorrect": false },
+                    { "text": "JSON Parsing", "rationale": "The firewall example parses a raw text file using regex, whereas the Cowrie example used JSON parsing.", "isCorrect": false },
+                    { "text": "Machine Learning", "rationale": "The script uses defined pattern matching (regex), not predictive models or machine learning algorithms.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Why would an administrator choose to share their honeypot data with an organization like The Honeynet Project?",
+                "answerOptions": [
+                    { "text": "To contribute to global threat intelligence and help other organizations block attacks proactively.", "rationale": "Sharing data allows signatures found in one location to be used for defense in others, strengthening global security.", "isCorrect": true },
+                    { "text": "To allow the Honeynet Project to manage their internal firewalls remotely.", "rationale": "Sharing data provides intelligence; it does not grant external organizations administrative control over internal infrastructure.", "isCorrect": false },
+                    { "text": "To offload the processing power required to run the honeypots.", "rationale": "Data sharing happens after collection; the administrator still hosts and runs the honeypots locally.", "isCorrect": false },
+                    { "text": "To monetize the data by selling logs to attackers.", "rationale": "The goal of threat intelligence sharing is defense and community protection, not profiting from malicious actors.", "isCorrect": false }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        // Shuffle options for randomness
+        quizData.forEach(q => {
+            q.answerOptions.sort(() => Math.random() - 0.5);
+        });
+
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        const feedbackArea = document.getElementById('feedback-area');
+        const feedbackMsg = document.getElementById('feedback-message');
+        const scoreDisplay = document.getElementById('score-display');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const data = quizData[currentQuestion];
+            questionText.textContent = data.question;
+            questionCounter.textContent = `Question ${currentQuestion + 1}/${quizData.length}`;
+            
+            // Reset UI
+            optionsContainer.innerHTML = '';
+            feedbackArea.classList.add('hidden');
+            
+            // Create options
+            data.answerOptions.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full text-left p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 font-medium text-slate-700 shadow-sm";
+                btn.textContent = option.text;
+                btn.onclick = () => checkAnswer(option, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            updateProgress();
+        }
+
+        function checkAnswer(selectedOption, btnElement) {
+            // Disable all buttons
+            const buttons = optionsContainer.getElementsByTagName('button');
+            for(let btn of buttons) {
+                btn.disabled = true;
+                btn.classList.add('opacity-75', 'cursor-not-allowed');
+            }
+
+            // Show Feedback Area
+            feedbackArea.classList.remove('hidden');
+
+            if (selectedOption.isCorrect) {
+                score++;
+                scoreDisplay.textContent = score;
+                // Highlight correct
+                btnElement.classList.remove('bg-white', 'border-slate-200', 'text-slate-700');
+                btnElement.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800', 'ring-1', 'ring-emerald-500');
+                
+                feedbackMsg.className = "p-4 rounded-lg mb-4 text-sm leading-relaxed bg-emerald-50 text-emerald-800 border border-emerald-200";
+                feedbackMsg.innerHTML = `<strong>Correct!</strong> <br> ${selectedOption.rationale}`;
+            } else {
+                // Highlight incorrect
+                btnElement.classList.remove('bg-white', 'border-slate-200', 'text-slate-700');
+                btnElement.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-800', 'ring-1', 'ring-rose-500');
+                
+                feedbackMsg.className = "p-4 rounded-lg mb-4 text-sm leading-relaxed bg-slate-100 text-slate-700 border border-slate-200";
+                
+                // Find and note rationale of correct answer
+                const correctOpt = quizData[currentQuestion].answerOptions.find(o => o.isCorrect);
+                feedbackMsg.innerHTML = `<strong>Incorrect.</strong> <br> ${selectedOption.rationale} <br><br> <span class="text-emerald-700 font-semibold">Correct Answer:</span> ${correctOpt.text}`;
+            }
+
+            // Change Next button text on last question
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.textContent = "See Results";
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const percentage = ((currentQuestion) / quizData.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        function showResults() {
+            questionScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            progressBar.style.width = '100%';
+            
+            const finalScoreEl = document.getElementById('final-score');
+            finalScoreEl.textContent = `${score}/${quizData.length}`;
+            
+            const emojiEl = document.getElementById('result-emoji');
+            if (score === quizData.length) emojiEl.textContent = "🧙‍♂️"; // Wizard
+            else if (score >= 7) emojiEl.textContent = "🛡️"; // Shield
+            else if (score >= 4) emojiEl.textContent = "🎓"; // Student
+            else emojiEl.textContent = "🐣"; // Egg
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            scoreDisplay.textContent = "0";
+            
+            // Re-shuffle for variety
+            quizData.forEach(q => {
+                q.answerOptions.sort(() => Math.random() - 0.5);
+            });
+
+            resultScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            loadQuestion();
+        }
+    </script>
+</body>
+</html>
+
+
+
+
